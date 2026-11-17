@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GuestPulse | Report Generator</title>
+<style>
+:root{--ink:#17243b;--muted:#718096;--line:#e7ebf2;--bg:#f5f7fb;--navy:#172b4d;--blue:#4169e1;--teal:#16a394;--red:#e36b72;--amber:#e6a23c;--green:#249b76}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:var(--ink)}
+header{background:linear-gradient(120deg,#142746,#263f68);color:white;padding:22px max(24px,calc((100% - 1180px)/2));display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:22px;letter-spacing:-.5px}.logo{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#5f8cff,#20b9a6);display:grid;place-items:center;font-weight:900}
+header small{display:block;color:#bdc9dc;font-size:11px;letter-spacing:2px;margin-top:2px}header .tag{font-size:12px;color:#d8e3f6;border:1px solid #607493;padding:8px 12px;border-radius:30px}
+main{max-width:1180px;margin:34px auto;padding:0 22px}.intro{margin-bottom:24px}.eyebrow{color:var(--blue);font-size:11px;font-weight:800;letter-spacing:2px}.intro h1{font-size:32px;margin:8px 0 6px;letter-spacing:-1px}.intro p{margin:0;color:var(--muted)}
+.panel{background:white;border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 8px 28px #1c31500a}.input-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.input-head h2{font-size:17px;margin:0}.hint{color:var(--muted);font-size:12px}
+textarea{width:100%;min-height:190px;resize:vertical;border:1px solid #dce3ee;border-radius:12px;padding:15px;font:13px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;color:#34445d;outline:none}textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px #4169e11a}
+.actions{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap}.btn{border:0;border-radius:10px;padding:12px 17px;font-weight:700;cursor:pointer;font-size:13px}.primary{background:var(--blue);color:white}.secondary{background:#eef2f8;color:#40516d}.btn:hover{filter:brightness(.97)}.status{font-size:12px;color:var(--muted)}.error{color:#c03945;margin-top:10px;font-size:13px}
+#report{display:none;margin-top:28px}.report-top{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:18px}.report-top h2{margin:5px 0;font-size:26px}.report-meta{font-size:12px;color:var(--muted)}.report-actions{display:flex;gap:8px;flex-wrap:wrap}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:18px 0}.metric{background:white;border:1px solid var(--line);border-radius:15px;padding:18px}.metric label{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.8px}.metric strong{display:block;font-size:30px;margin:8px 0 2px;letter-spacing:-1px}.metric span{font-size:11px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.section{background:white;border:1px solid var(--line);border-radius:15px;padding:20px;margin-bottom:14px}.section h3{font-size:15px;margin:0 0 14px}.section p{color:#53627a;line-height:1.65;font-size:13px;margin:0}
+.sentiment-row{display:grid;grid-template-columns:82px 1fr 42px;gap:10px;align-items:center;margin:13px 0;font-size:12px}.track{height:9px;background:#edf0f5;border-radius:20px;overflow:hidden}.fill{height:100%;border-radius:20px}.positive{background:var(--green)}.negative{background:var(--red)}.mixed{background:var(--amber)}
+table{width:100%;border-collapse:collapse;font-size:12px}th{text-align:left;color:var(--muted);font-weight:700;padding:10px 8px;border-bottom:1px solid var(--line)}td{padding:11px 8px;border-bottom:1px solid #f0f2f6;vertical-align:top}tr:last-child td{border-bottom:0}.priority{font-size:10px;font-weight:800;padding:5px 8px;border-radius:20px;display:inline-block}.High{background:#fff0f0;color:#c94d57}.Medium{background:#fff7e8;color:#a87518}.Low{background:#edf7f2;color:#25805f}
+.theme-list{display:grid;gap:12px}.theme{display:flex;justify-content:space-between;gap:12px;font-size:12px}.theme b{font-weight:650}.theme span{color:var(--muted)}
+.rec{padding:13px 0;border-bottom:1px solid #eff1f5;display:grid;grid-template-columns:66px 1fr;gap:12px}.rec:last-child{border:0;padding-bottom:0}.rec p{margin:5px 0 0}.rec strong{font-size:12px}.rec small{color:var(--muted);font-size:11px}
+.footer{text-align:center;color:#99a4b5;font-size:11px;padding:22px}
+@media(max-width:760px){.cards{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}.report-top{display:block}.report-actions{margin-top:14px}header{padding:18px 20px}.intro h1{font-size:26px}}
+@media print{body{background:white}.no-print,header .tag,.input-panel{display:none!important}main{max-width:none;margin:0;padding:0 8px}#report{display:block!important}.section,.metric{break-inside:avoid;box-shadow:none}.report-actions{display:none}.footer{padding:10px}}
+</style>
+</head>
+<body>
+<header><div class="brand"><div class="logo">G</div><div>GuestPulse<small>GUEST EXPERIENCE INTELLIGENCE</small></div></div><div class="tag">REPORT GENERATOR</div></header>
+<main>
+  <div class="intro"><div class="eyebrow">TURN FEEDBACK INTO ACTION</div><h1>Hotel Guest Experience Report</h1><p>Paste your Dify analysis and generate a clear, management-ready report in seconds.</p></div>
+  <section class="panel input-panel">
+    <div class="input-head"><h2>Paste your AI analysis</h2><span class="hint">JSON output from your GuestPulse agent</span></div>
+    <textarea id="source" placeholder='Paste the JSON response from Dify here...'></textarea>
+    <div class="actions"><button class="btn primary" id="generate">Generate report&nbsp; →</button><button class="btn secondary" id="demo">Load sample data</button><button class="btn secondary" id="clear">Clear</button><span class="status" id="status">Your data stays in this browser.</span></div>
+    <div class="error" id="error"></div>
+  </section>
+  <section id="report">
+    <div class="report-top"><div><div class="eyebrow">GUESTPULSE INSIGHTS</div><h2>Guest Experience Report</h2><div class="report-meta" id="reportMeta"></div></div><div class="report-actions no-print"><button class="btn secondary" id="print">Print / Save PDF</button><button class="btn secondary" id="back">Edit input</button></div></div>
+    <div class="cards" id="metrics"></div>
+    <div class="grid2">
+      <section class="section"><h3>Guest sentiment</h3><div id="sentiment"></div></section>
+      <section class="section"><h3>Executive summary</h3><p id="summary"></p></section>
+    </div>
+    <div class="grid2">
+      <section class="section"><h3>Top positive themes</h3><div class="theme-list" id="positives"></div></section>
+      <section class="section"><h3>Priority issues</h3><div class="theme-list" id="topIssues"></div></section>
+    </div>
+    <section class="section"><h3>Issues identified</h3><div style="overflow-x:auto"><table><thead><tr><th>Issue</th><th>Mentions</th><th>Priority</th></tr></thead><tbody id="issues"></tbody></table></div></section>
+    <section class="section"><h3>Recommended actions</h3><div id="recommendations"></div></section>
+    <div class="footer">Generated by GuestPulse · Guest feedback, transformed into actionable insight.</div>
+  </section>
+</main>
+<script>
+const sample = {
+  total_reviews:8,positive_count:2,negative_count:4,mixed_count:2,
+  issues:[
+    {category:"Check-in waiting time",count:2,priority:"High"},
+    {category:"Maintenance responsiveness (no follow-up)",count:2,priority:"High"},
+    {category:"Room cleanliness (dirty on arrival)",count:1,priority:"High"},
+    {category:"Air conditioning not working",count:1,priority:"High"},
+    {category:"Elevator out of service",count:1,priority:"High"},
+    {category:"Food and beverage service waiting time",count:2,priority:"Medium"},
+    {category:"Reception staff attitude and helpfulness",count:1,priority:"Medium"},
+    {category:"Wi-Fi reliability in rooms",count:1,priority:"Medium"}
+  ],
+  positive_themes:[
+    {category:"Staff service and friendliness",count:4},
+    {category:"Facilities (spa, pool)",count:2},
+    {category:"Room quality and comfort",count:2},
+    {category:"Food quality and taste",count:2},
+    {category:"Location",count:1}
+  ],
+  recommendations:[
+    {priority:"High",action:"Reduce check-in times with peak-hour front-desk staffing, a clear queue system and pre-arrival express check-in.",reason:"Slow check-in was mentioned in two reviews, including a reported hour-long wait."},
+    {priority:"High",action:"Introduce a maintenance rapid-response process with ticket tracking and duty-manager escalation.",reason:"Guests reported unresolved defects and a lack of follow-up."},
+    {priority:"Medium",action:"Improve restaurant staffing and set clear service-time targets during peak periods.",reason:"Long waits for dinner and room service were reported."}
+  ]
+};
+const $=id=>document.getElementById(id);
+function parseInput(raw){
+  let s=raw.trim();
+  try{return JSON.parse(s)}catch(e){}
+  // Dify output may contain two JSON objects pasted consecutively. Use the first complete object.
+  let depth=0,inString=false,escape=false,start=-1;
+  for(let i=0;i<s.length;i++){
+    const c=s[i];
+    if(start<0){if(c==='{'){start=i;depth=1;}continue;}
+    if(inString){if(escape)escape=false;else if(c==='\\')escape=true;else if(c==='"')inString=false;continue;}
+    if(c==='"'){inString=true;continue;}
+    if(c==='{')depth++;
+    if(c==='}')depth--;
+    if(depth===0){const candidate=s.slice(start,i+1);try{return JSON.parse(candidate)}catch(e){start=-1;}}
+  }
+  throw new Error("Could not find valid JSON. Please paste the structured JSON response from Dify.");
+}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function priority(p){let v=String(p||"Low");return `<span class="priority ${esc(v)}">${esc(v)}</span>`}
+function render(d){
+ const total=Number(d.total_reviews)||0, pos=Number(d.positive_count)||0, neg=Number(d.negative_count)||0, mix=Number(d.mixed_count)||0;
+ const pct=n=>total?Math.round(n/total*100):0;
+ $("metrics").innerHTML=[
+  ["Total reviews",total,"Reviews analyzed"],["Positive",pct(pos)+"%",""+pos+" reviews"],["Negative",pct(neg)+"%",""+neg+" reviews"],["Mixed",pct(mix)+"%",""+mix+" reviews"]
+ ].map((x,i)=>`<div class="metric"><label>${x[0]}</label><strong>${x[1]}</strong><span>${x[2]}</span></div>`).join("");
+ $("sentiment").innerHTML=[["Positive",pos,"positive"],["Negative",neg,"negative"],["Mixed",mix,"mixed"]].map(([n,v,c])=>`<div class="sentiment-row"><span>${n}</span><div class="track"><div class="fill ${c}" style="width:${pct(v)}%"></div></div><b>${pct(v)}%</b></div>`).join("");
+ const issues=Array.isArray(d.issues)?d.issues:[], positives=Array.isArray(d.positive_themes)?d.positive_themes:[];
+ const high=issues.filter(x=>String(x.priority).toLowerCase()==="high").length;
+ $("summary").textContent=`A total of ${total} guest reviews were analyzed. ${pct(pos)}% were positive, ${pct(neg)}% negative and ${pct(mix)}% mixed. The analysis identified ${issues.length} issue categories, including ${high} high-priority areas. Guests most frequently praised ${positives.slice(0,2).map(x=>x.category).join(" and ")||"the hotel's service and facilities"}. Management should prioritize recurring operational issues while protecting the hotel's strongest guest-experience drivers.`;
+ $("positives").innerHTML=positives.length?positives.slice().sort((a,b)=>(b.count||0)-(a.count||0)).map(x=>`<div class="theme"><b>${esc(x.category)}</b><span>${Number(x.count)||0} mentions</span></div>`).join(""):"<p>No positive themes supplied.</p>";
+ const sorted=issues.slice().sort((a,b)=>({High:3,Medium:2,Low:1}[b.priority]||0)-({High:3,Medium:2,Low:1}[a.priority]||0)||(b.count||0)-(a.count||0));
+ $("topIssues").innerHTML=sorted.slice(0,5).map(x=>`<div class="theme"><b>${esc(x.category)}</b><span>${priority(x.priority)}</span></div>`).join("")||"<p>No issues supplied.</p>";
+ $("issues").innerHTML=sorted.map(x=>`<tr><td>${esc(x.category)}</td><td>${Number(x.count)||0}</td><td>${priority(x.priority)}</td></tr>`).join("");
+ const recs=Array.isArray(d.recommendations)?d.recommendations:[];
+ $("recommendations").innerHTML=recs.map((x,i)=>`<div class="rec"><div>${priority(x.priority)}</div><div><strong>${i+1}. ${esc(x.action)}</strong><p>${esc(x.reason||"")}</p></div></div>`).join("")||"<p>No recommendations supplied.</p>";
+ $("reportMeta").textContent=`${total} reviews analyzed · Generated ${new Date().toLocaleDateString()}`;
+ $("report").style.display="block"; $("error").textContent=""; $("status").textContent="Report generated successfully."; $("report").scrollIntoView({behavior:"smooth"});
+}
+$("generate").onclick=()=>{try{const d=parseInput($("source").value);if(!d||typeof d!=="object"||Array.isArray(d))throw new Error("The pasted content must be a JSON object.");render(d);}catch(e){$("error").textContent=e.message;$("report").style.display="none";}};
+$("demo").onclick=()=>{$("source").value=JSON.stringify(sample,null,2);$("status").textContent="Sample data loaded. Click Generate report.";};
+$("clear").onclick=()=>{$("source").value="";$("error").textContent="";$("report").style.display="none";$("status").textContent="Input cleared.";};
+$("print").onclick=()=>window.print();
+$("back").onclick=()=>$("source").scrollIntoView({behavior:"smooth"});
+</script>
+</body></html>
